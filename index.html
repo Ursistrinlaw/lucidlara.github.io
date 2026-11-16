@@ -49,7 +49,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--moon);outline-offse
 /* ---------- dashboard grid ---------- */
 .dash{display:grid;gap:28px 28px;padding-top:28px;padding-bottom:40px;
   grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,.9fr);
-  grid-template-areas:"tw tw short" "game tt vods" "about recent sched" "gal gal sched"}
+  grid-template-areas:"tw tw short" "game tt vods" "about recent sched"}
 .p{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:0 20px 20px 0;display:flex;flex-direction:column;gap:14px}
 .ph{display:flex;align-items:center;gap:10px}
 .ph h2{font-size:19px;white-space:nowrap}
@@ -81,7 +81,10 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--moon);outline-offse
 .vert{position:relative;flex:1;min-height:300px;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:16px;text-decoration:none;background:linear-gradient(170deg,#2a0f45,#b8367e 70%,#ffc2c8)}
 .play{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;background:#ff3d5a;display:grid;place-items:center;box-shadow:0 6px 20px rgba(0,0,0,.35)}
 .play::after{content:"";border-left:18px solid #fff;border-top:11px solid transparent;border-bottom:11px solid transparent;margin-left:4px}
-.vert b{position:relative;font-size:16px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.vert .thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vert::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(18,6,31,.85));z-index:1}
+.vert .play{z-index:2}
+.vert b{z-index:2;position:relative;font-size:16px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
 
 /* game */
 .game{display:flex;gap:14px}
@@ -89,7 +92,9 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--moon);outline-offse
 .cover img{width:100%;height:100%;object-fit:cover;border-radius:8px}
 .game .t{font-size:17px;font-weight:700}
 .prog{display:inline-flex;align-items:center;gap:8px;font:700 22px Unbounded;color:var(--pink);margin-top:6px}
-.prog i{width:9px;height:9px;border-radius:50%;background:var(--pink);box-shadow:0 0 0 4px rgba(255,143,184,.2)}
+.prog i{width:9px;height:9px;border-radius:50%;background:#8a5fa8}
+.prog{color:var(--dim);font-size:19px}
+.prog.on{color:var(--live)}.prog.on i{background:var(--live);animation:tw 1.2s infinite;box-shadow:0 0 0 4px rgba(255,79,139,.25)}
 
 /* lists */
 .list{list-style:none;margin:0;padding:0}
@@ -123,10 +128,10 @@ footer{border-top:1px solid var(--line);padding:24px 0;color:var(--dim);font-siz
 footer .wrap{display:flex;flex-wrap:wrap;gap:10px 20px;justify-content:space-between}
 
 @media(max-width:1000px){
-  .dash{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"tw tw" "short game" "short tt" "vods sched" "recent sched" "about about" "gal gal"}
+  .dash{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"tw tw" "short game" "short tt" "vods sched" "recent sched" "about about"}
 }
 @media(max-width:640px){
-  .dash{grid-template-columns:minmax(0,1fr);grid-template-areas:"tw" "sched" "game" "tt" "short" "recent" "vods" "about" "gal"}
+  .dash{grid-template-columns:minmax(0,1fr);grid-template-areas:"tw" "sched" "game" "tt" "short" "recent" "vods" "about"}
   .p{border-right:0;padding-right:0}
   .banner .wrap{flex-direction:column;text-align:center;min-height:0}
   .tag,.menu{justify-content:center}
@@ -215,10 +220,6 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 20px;justify-content:space-bet
     <p class="muted" id="tz" style="margin:0"></p>
   </section>
 
-  <section class="p" id="gal">
-    <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#ff8fb8" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg><h2>Gallery</h2></div>
-    <div class="grid" id="grid"></div>
-  </section>
 </main>
 
 <footer><div class="wrap"><span>© <span id="yr"></span> LucidLara</span><span id="mailTxt"></span></div></footer>
@@ -236,12 +237,13 @@ const CONFIG = {
     {icon:"twitch",  label:"lucidlara",    url:"https://twitch.tv/lucidlara"},
     {icon:"tiktok",  label:"@LucidLaraTv", url:"https://www.tiktok.com/@LucidLaraTv"},
     {icon:"youtube", label:"@LucidLaraTv", url:"https://www.youtube.com/@LucidLaraTv"},
-    {icon:"discord", label:"Discord",      url:"#"},
     {icon:"mail",    label:"Business email", url:"mailto:lucidlara.tv@outlook.com"}
   ],
   email: "lucidlara.tv@outlook.com",
-  latestShort: {title:"Latest YouTube Short", url:"https://www.youtube.com/@LucidLaraTv/shorts"},
-  playing: {title:"God of War Ragnarök", meta:"Santa Monica Studio · Action adventure", cover:""},
+  // Latest Short: paste the link of your newest Short (Share → Copy link). The thumbnail loads from YouTube.
+  latestShort: {url:"https://www.youtube.com/shorts/yIm7Zd84g6w", title:"My latest Short"},
+  shortsPage: "https://www.youtube.com/@LucidLaraTv/shorts",
+  playing: {title:"God of War Ragnarök", meta:"Santa Monica Studio · Action adventure", cover:""},  // the status under it updates by itself from Twitch
   // Upcoming streams. day: 1 = Monday … 7 = Sunday. Times in Amsterdam time (24h).
   // Example: {day:3, time:"20:00", game:"Elden Ring"}
   schedule: [
@@ -263,12 +265,6 @@ const CONFIG = {
   ],
   bio: [
     "Hii, I'm Lara!! I stream on Twitch and TikTok: Open-World adventure games, FPS, Racing, Cosy games, and more !"
-  ],
-  gallery: [   // add src:"images/..." to show real photos
-    {label:"Stream setup", g:"linear-gradient(135deg,#5a1a6b,#f2709a)"},
-    {label:"Cosy corner", g:"linear-gradient(160deg,#2a0f45,#b8367e)"},
-    {label:"Fan art", g:"linear-gradient(135deg,#b8367e,#ffc2c8)"},
-    {label:"Late night", g:"linear-gradient(200deg,#12061f,#6b2378)"}
   ]
 };
 /* ================================================================== */
@@ -297,17 +293,29 @@ $("tags").innerHTML = CONFIG.tags.map(t => `<span>${esc(t)}</span>`).join("");
 $("socials").innerHTML = CONFIG.socials.map(s => `<a class="soc" href="${esc(s.url)}" ${s.url.startsWith("http")?'target="_blank" rel="noopener"':""}>${ICON[s.icon]||""}${esc(s.label)}</a>`).join("");
 
 // panels
-$("shortLink").href = CONFIG.latestShort.url;
-$("shortTitle").textContent = CONFIG.latestShort.title;
+const S = CONFIG.latestShort;
+const ytId = (S.url.match(/(?:shorts\/|v=|youtu\.be\/|embed\/)([\w-]{11})/) || [])[1];
+$("shortLink").href = ytId ? S.url : CONFIG.shortsPage;
+$("shortTitle").textContent = ytId ? S.title : "Watch my Shorts";
+if (ytId) {
+  const t = document.createElement("img");
+  t.className = "thumb"; t.alt = ""; t.loading = "lazy";
+  const srcs = [`https://i.ytimg.com/vi/${ytId}/oar2.jpg`, `https://i.ytimg.com/vi/${ytId}/hq720.jpg`, `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`];
+  let k = 0;
+  t.onerror = () => { k++; if (k < srcs.length) t.src = srcs[k]; else t.remove(); };
+  // YouTube sends a tiny grey placeholder when a size doesn't exist: skip it
+  t.onload = () => { if (t.naturalWidth <= 120) t.onerror(); };
+  t.src = srcs[0];
+  $("shortLink").prepend(t);
+}
 const P = CONFIG.playing;
 $("gameBox").innerHTML = `<div class="cover">${P.cover ? img(P.cover, P.title) : esc(P.title)}</div>
-  <div><div class="t">${esc(P.title)}</div><div class="muted">${esc(P.meta)}</div><div class="prog"><i></i>In progress</div></div>`;
+  <div><div class="t">${esc(P.title)}</div><div class="muted">${esc(P.meta)}</div><div class="prog" id="gameStatus"><i></i><span>Not live right now</span></div></div>`;
 const tt = encodeURIComponent(CONFIG.tiktokUser), chan = encodeURIComponent(CONFIG.twitchChannel);
 $("ttLive").href = `https://www.tiktok.com/@${tt}/live`;
 $("ttPage").href = `https://www.tiktok.com/@${tt}`;
 $("vodLink").href = `https://www.twitch.tv/${chan}/videos?filter=archives`;
 $("bio").innerHTML = CONFIG.bio.map(p => `<p>${esc(p)}</p>`).join("");
-$("grid").innerHTML = CONFIG.gallery.map(g => `<div class="gi" style="--g:${g.g}">${g.src ? img(g.src, g.label) : esc(g.label)}</div>`).join("");
 $("mailTxt").textContent = "Business: " + CONFIG.email;
 $("yr").textContent = new Date().getFullYear();
 
@@ -352,6 +360,8 @@ $("tz").textContent = rows.every(r => !r.tt) ? "Games and times coming soon." : 
 const setLive = on => {
   $("liveDot").classList.toggle("on", on);
   $("liveDot").lastElementChild.textContent = on ? "Live now" : "Offline";
+  $("gameStatus").classList.toggle("on", on);
+  $("gameStatus").lastElementChild.textContent = on ? "Playing live now" : "Not live right now";
 };
 const host = location.hostname;
 const placeholder = () => {
