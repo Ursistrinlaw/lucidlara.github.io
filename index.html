@@ -27,7 +27,9 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--moon);outline-offse
 /* ---------- banner ---------- */
 .banner{position:relative;overflow:hidden;background:linear-gradient(180deg,#12061f 0%,#2a0f45 30%,#5a1a6b 55%,#b8367e 78%,#f2709a 92%,#ffc2c8 100%)}
 .sky{position:absolute;inset:0;width:100%;height:100%}
-.star{animation:tw 3s ease-in-out infinite}@keyframes tw{50%{opacity:.25}}
+.star{animation:tw 4s ease-in-out infinite}@keyframes tw{50%{opacity:.3}}
+.shoot{animation:shoot 7s linear infinite;opacity:0}
+@keyframes shoot{0%{transform:translate(0,0);opacity:0}3%{opacity:1}10%{transform:translate(-340px,150px);opacity:0}100%{transform:translate(-340px,150px);opacity:0}}
 .banner .wrap{position:relative;display:flex;align-items:center;gap:clamp(18px,3vw,36px);padding-top:28px;padding-bottom:28px;min-height:240px}
 .portrait{flex:none;width:clamp(120px,15vw,180px);aspect-ratio:1;border-radius:50%;overflow:hidden;border:4px solid var(--moon);box-shadow:0 0 0 8px rgba(255,225,234,.12),0 16px 40px rgba(18,6,31,.5);background:#5a1a6b;animation:float 6s ease-in-out infinite}
 .portrait img{width:100%;height:100%;object-fit:cover;display:block}
@@ -138,7 +140,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 20px;justify-content:space-bet
   .vert{min-height:360px}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.shoot{display:none}}
 </style>
 </head>
 <body>
@@ -146,18 +148,14 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 20px;justify-content:space-bet
 <header class="banner" id="top">
   <svg class="sky" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
-      <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1c9"/><stop offset=".5" stop-color="#ffb08a"/><stop offset="1" stop-color="#ff5c9a"/></linearGradient>
-      <radialGradient id="glow"><stop offset="0" stop-color="#ffb3c7" stop-opacity=".5"/><stop offset="1" stop-color="#ffb3c7" stop-opacity="0"/></radialGradient>
-      <clipPath id="sc"><rect x="0" y="0" width="1200" height="226"/><rect x="0" y="234" width="1200" height="9"/><rect x="0" y="251" width="1200" height="7"/><rect x="0" y="266" width="1200" height="5"/><rect x="0" y="279" width="1200" height="4"/></clipPath>
-      <g id="cl"><circle cx="0" cy="0" r="28"/><circle cx="34" cy="-13" r="36"/><circle cx="72" cy="-3" r="29"/><circle cx="102" cy="6" r="22"/><rect x="-22" y="0" width="140" height="28" rx="14"/></g>
+      <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12061f"/><stop offset=".45" stop-color="#3a1257"/><stop offset=".78" stop-color="#9c2d7c"/><stop offset="1" stop-color="#f2709a"/></linearGradient>
+      <linearGradient id="tail" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#ffd0de" stop-opacity="0"/></linearGradient>
     </defs>
+    <rect width="1200" height="300" fill="url(#skyG)"/>
     <g id="stars"></g>
-    <circle cx="1010" cy="250" r="190" fill="url(#glow)"/>
-    <circle cx="1010" cy="250" r="120" fill="url(#sun)" clip-path="url(#sc)"/>
-    <use href="#cl" fill="#c25a9e" opacity=".7" transform="translate(820 230) scale(1.1)"/>
-    <use href="#cl" fill="#f7b6cf" transform="translate(1040 280) scale(1.3)"/>
-    <use href="#cl" fill="#ffd0de" transform="translate(900 300) scale(1.4)"/>
-    <path d="M700 52a18 18 0 1 0 16 26a14 14 0 1 1 -16 -26z" fill="#ffe1ea" opacity=".9"/>
+    <g transform="translate(1000 40) rotate(-24)"><rect class="shoot" width="130" height="2" rx="1" fill="url(#tail)"/></g>
+    <g transform="translate(760 20) rotate(-24)"><rect class="shoot" width="100" height="1.6" rx="1" fill="url(#tail)" style="animation-delay:3.4s"/></g>
+    <g transform="translate(1160 110) rotate(-24)"><rect class="shoot" width="90" height="1.4" rx="1" fill="url(#tail)" style="animation-delay:5.6s;animation-duration:9s"/></g>
   </svg>
   <div class="wrap">
     <div class="portrait" id="portrait"></div>
@@ -281,12 +279,19 @@ const ICON = {
 const img = (src, alt) => `<img src="${esc(src)}" alt="${esc(alt)}">`;
 
 // banner
-let st = "";
-for (let i = 0; i < 70; i++) {
-  const x = (i * 173) % 1200, y = (i * 67) % 170, r = (i % 3) * .6 + .7;
-  st += `<circle class="star" cx="${x}" cy="${y}" r="${r}" fill="#fff4f8" style="animation-delay:${(i%7)*.4}s"/>`;
+{ // realistic star field (seeded, so it looks the same every visit), fading toward the pink horizon
+  let seed = 33; const r = () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const tints = ["#ffffff","#ffffff","#fff4f8","#ffe6ef","#eae6ff","#fff1de"];
+  let st = "";
+  for (let i = 0; i < 380; i++) {
+    const x = r() * 1200, y = r() * 300, size = .3 + Math.pow(r(), 5) * 1.9;
+    const op = (.3 + r() * .7) * Math.max(0, 1 - y / 300 * 1.15), c = tints[Math.floor(r() * tints.length)];
+    if (op < .05) continue;
+    if (size > 1.3) st += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(size*4).toFixed(1)}" fill="${c}" opacity="${(op*.12).toFixed(2)}"/><circle class="star" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${size.toFixed(2)}" fill="${c}" opacity="${op.toFixed(2)}" style="animation-delay:${(r()*4).toFixed(1)}s"/>`;
+    else st += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${size.toFixed(2)}" fill="${c}" opacity="${op.toFixed(2)}"/>`;
+  }
+  $("stars").innerHTML = st;
 }
-$("stars").innerHTML = st;
 $("portrait").innerHTML = CONFIG.photo ? img(CONFIG.photo, "Lara") : "";
 $("mini").innerHTML = CONFIG.photo ? img(CONFIG.photo, "") : "";
 $("tags").innerHTML = CONFIG.tags.map(t => `<span>${esc(t)}</span>`).join("");
